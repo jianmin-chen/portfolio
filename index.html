@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width; initial-scale=1.0" />
+        <meta property="og:author" content="Jianmin Chen" />
+        <base target="_blank" />
+        <title>Portfolio | Jianmin Chen</title>
+        <link href="./index.css" rel="stylesheet" />
+        <script src="https://jianmin-chen.github.io/markdown-parser/parser.js"></script>
+        <script src="https://jianmin-chen.github.io/markdown-parser/utils.js"></script>
+    </head>
+    <body>
+        <script>
+            const posts = ${posts};
+
+            const randomNum = (min, max) =>
+                Math.random() * (max - min + 1) + min;
+            const randomColor = () => {
+                let color = 0;
+                while (!color || color.toString().length != 6) {
+                    color = Math.floor(Math.random() * 16777215).toString(16);
+                }
+                return color;
+            };
+
+            window.onload = () => {
+                document.querySelectorAll(".card").forEach((card, key) => {
+                    card.style.border = `1px solid #${randomColor()}`;
+                    card.style.transform = `rotate(${
+                        key % 2 === 0 ? "-" : ""
+                    }${randomNum(1, 2)}deg)`;
+                });
+
+                document.getElementById("date").innerText =
+                    (new Date() - new Date(2006, 11, 08)) /
+                    1000 /
+                    60 /
+                    60 /
+                    24 /
+                    365;
+
+                for (let post of posts.sort((a, b) => new Date(a.date) < new Date(b.date))) {
+                    let postContainer = document.createElement("div");
+                    postContainer.classList.add("post");
+                    let heading = document.createElement("h2");
+                    heading.innerText = new Date(post.date).toLocaleDateString(
+                        "en-US"
+                    );
+                    let content = document.createElement("div");
+                    content.innerHTML = parseMarkdown(post.content);
+                    const hr = document.createElement("hr");
+                    postContainer.appendChild(heading);
+                    postContainer.appendChild(content);
+                    postContainer.appendChild(hr);
+                    document.getElementById("posts").appendChild(postContainer);
+                }
+            };
+        </script>
+        <div class="card">
+            <div class="prose">
+                <div class="alert">
+                    Currently listening to <span id="music">${song}</span>.
+                </div>
+                <h1>
+                    <img
+                        alt="Profile image"
+                        id="profile"
+                        src="https://avatars.githubusercontent.com/jianmin-chen"
+                    />
+                    Hi, I'm Jianmin Chen.
+                </h1>
+                <p>
+                    Some random facts: I'm <span id="date"></span> years old.
+                    I'm an
+                    <a href="https://www.16personalities.com/infp-personality"
+                        >INFP</a
+                    >
+                    and a
+                    <a
+                        href="https://www.allure.com/story/sagittarius-zodiac-sign-personality-traits"
+                        >Sagittarius</a
+                    >
+                    (December) if you're interested in that kind of thing. I
+                    suppose I'm a minority of a minority of a minority of a
+                    minority: a queer, female (she/her/hers) Asian interested in
+                    the tech sector. I haven't come out to anyone close to me
+                    IRL, but I feel like it's mostly obvious.
+                </p>
+                <p>
+                    Taken from my
+                    <a href="https://jianminchen.com">blog</a> (which, yes, has
+                    a pretty different design):
+                </p>
+                <blockquote>
+                    Hey! I'm Jianmin Chen. I typically go by a variation of my
+                    name online - that is, "jchen" or "jianmin-chen" or "jc" or
+                    "jianminchen". (And counting, depending on whether my name's
+                    been taken or not. It's surprising how a rare name like
+                    mine's can be so common). In real life, I go by "Amanda"
+                    since most people have trouble pronouncing my name. I put
+                    the pro in procrastinator by working on multiple projects at
+                    any given time and pretending like I'll definitely be able
+                    to finish them. In my free time, I also love playing the
+                    guitar (note: should probably start playing more often,
+                    quite frankly), reading (I read a lot), running (I normally
+                    run a lot, although this summer I've been biking more -
+                    around 6~ miles a day to and from work), and stressing over
+                    the smallest things (no, I don't have a rubber duck to
+                    stress and debug with me).
+                </blockquote>
+                <blockquote>
+                    I refuse to sign up for any social media websites (e.g.,
+                    Facebook, Twitter, etc.) unless I have actual reasons for
+                    doing so (i.e., business-related), so you won't find me
+                    anywhere on those lovely not-so-lovely places. It's just a
+                    me thing, I guess.
+                </blockquote>
+                <blockquote>
+                    Now that I've started talking about myself, I should
+                    probably talk a little more. (Trust me, I'm less talkative
+                    in real life.) I discovered programming when I found an
+                    awesome book called
+                    <a href="https://nostarch.com/python-kids-2nd-edition"
+                        >Python for Kids</a
+                    >
+                    at my local library. (I've since moved, but Brooklyn is an
+                    awesome place.) Programming is basically my favorite pastime
+                    (I don't know if it can be considered a pastime anymore), as
+                    long as I don't feel pressured to do it. (I think not
+                    enjoying being pressured to do something applies to a lot of
+                    things, but especially learning. Take that, public school
+                    system!) (Yes, I also procrastinate when it comes to
+                    finishing schoolwork/homework/whatever you call it).
+                </blockquote>
+                <blockquote>
+                    Anyways, I love tech in general, so a pretty large chunk of
+                    my day is spent doing something tech-related, like:
+                </blockquote>
+                <blockquote>
+                    <ul>
+                        <li>
+                            Programming, obviously: Mostly full-stack web
+                            development, but I'm interested in getting involved
+                            in other fields. Like I said before, I love every
+                            aspect of technology. Sadly, time exists.
+                        </li>
+                        <li>
+                            Geeking over computers: I'm planning to learn more
+                            about the inner workings soon with
+                            <a href="https://www.nand2tetris.org/"
+                                >Nand2Tetris</a
+                            >, but mostly IT stuff at this point
+                        </li>
+                    </ul>
+                </blockquote>
+            </div>
+        </div>
+        <div class="card">
+            <div class="prose">
+                <h1>I'm trying to live by a set of values.</h1>
+                <p>
+                    Ever since I read
+                    <a href="https://sarthakmohanty.me/manifesto">this</a>, I've
+                    been thinking: what are the values I want to live by?
+                    Recently, I've been struggling. I'm not sure what I want to
+                    do or what direction I want to go in (quite the teenage
+                    dilemna, I'll admit). My emotions have been fluctuating and
+                    I'm trying to put a finger on something, something for
+                    stability. I just don't know... what.
+                </p>
+                <p>
+                    After I read the manifesto (that I've linked), I see a way
+                    out: the very least I can do is live by a set of values. No
+                    matter what happens, I can live by a set of values that I
+                    believe in. And as I thought about it, I realized: I'm
+                    already doing this. I believe in these values, and I've been
+                    trying to live by them.
+                </p>
+                <h2>1. You're on your own, kid.</h2>
+                <p>
+                    This is intentionally taken off from a song from Taylor
+                    Swift's
+                    <a href="https://en.wikipedia.org/wiki/Midnights"
+                        >Midnights</a
+                    >, where she sings, "You're on your own, kid". When I heard
+                    it, I instantly knew that while it wasn't my favorite song
+                    off the album, it was the most meaningful to me, personally.
+                    Ultimately: I'm on my own. I'm responsible for my own
+                    success and failures. If I make a mistake, it's up to me to
+                    fix. If I want something, I gotta go get it myself. I can't
+                    wait around, waiting for something to come to me.
+                </p>
+                <p>
+                    Currently, I've been thinking of this in terms of my
+                    indecision. If I want to make a change, I need to step up my
+                    game. No one's going to save me; it's up to me to finally
+                    decide to do something.
+                </p>
+                <h2>2. Things are easier than they seem.</h2>
+                <p>
+                    This has become a pattern in my life. I have anxiety, but
+                    lately, I've been slowly getting over it by simply asking:
+                    am I blowing things out of proportion? I blow too many
+                    things out of proportion, when the solution is simple: just
+                    do it.
+                </p>
+                <p>
+                    More importantly, if you make a mistake, you can fix it.
+                    There's always a alternate route. This has given me so much
+                    peace, just coming to terms with this fact.
+                </p>
+                <p>That's it, so far. Thanks for reading.</p>
+                <img
+                    alt="Signature"
+                    id="signature"
+                    src="/public/images/signature.svg"
+                />
+            </div>
+        </div>
+        <div class="card">
+            <div class="prose">
+                <h1>How was this website created?</h1>
+                <p>
+                    After I saw
+                    <a href="https://youtu.be/cEH_ipqHbUw">this video</a> on
+                    creating a server from scratch in C, I decided to try it out
+                    for myself, but in Python. I ended up writing around 170
+                    lines of (pretty bad) code, and I added a couple extra
+                    features:
+                </p>
+                <ul>
+                    <li>
+                        Posts, baby! Yes, the posts are being stored in a folder
+                        on the backend and then being served on the frontend,
+                        using a custom templating engine (of sorts, haha).
+                    </li>
+                    <li>
+                        Ability to read environment variables. Currently, this
+                        is being used to cURL the Spotify API (with an OAuth
+                        token) to get what I'm currently listening to.
+                    </li>
+                </ul>
+                <p>
+                    So unecessary, but so fun.Everything was written from
+                    scratch; only default libraries in Python
+                    (<code>json</code>, <code>os</code>, <code>socket</code>,
+                    and <code>urllib</code>), were used.
+                </p>
+                <p>
+                    The design is inspired by
+                    <a href="https://css-tricks.com/">CSS Tricks</a>. You'll
+                    noticed I used similar fonts, including:
+                </p>
+                <ul>
+                    <li>
+                        <a href="https://www.bl-melody.com/">BL Melody</a> for
+                        the headings
+                    </li>
+                    <li>
+                        <a href="https://fonts.google.com/specimen/Alegreya"
+                            >Alegreya</a
+                        >
+                        for the text
+                    </li>
+                </ul>
+                <p>
+                    The source code is located on
+                    <a href="https://github.com/jianmin-chen/portfolio"
+                        >GitHub</a
+                    >.
+                </p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="prose">
+                <h1>Other projects I'm working on.</h1>
+                <p>
+                    I've got a couple of secret projects I'm working on. They're
+                    pretty big scale, so sign up for the newsletter on my
+                    <a href="https://jianminchen.com">blog</a>
+                    to be notified when they release! 😉
+                </p>
+                <p>
+                    Other than that, check out my GitHub for my smaller
+                    projects. I'll include projects here when I have the time.
+                </p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="prose">
+                <h1>Here are some of my shorter thoughts.</h1>
+                <p>
+                    For my longer thoughts, check out my
+                    <a href="https://jianminchen.com">blog</a>.
+                </p>
+                <div id="posts"></div>
+            </div>
+        </div>
+    </body>
+</html>

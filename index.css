@@ -1,0 +1,138 @@
+@import url("https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,600;1,400;1,600&display=swap");
+
+@font-face {
+    font-family: "BL Melody";
+    font-weight: bold;
+    src: url("https://uploads-ssl.webflow.com/609da098c175bfcdca36bb3c/61930aaec81caf08d827a9f5_BLMelodyBETA-Bold.woff2")
+        format("woff2");
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body,
+html {
+    background-color: #fafaf9;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    margin: 0;
+    padding-inline: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+#music {
+    font-family: "BL Melody", sans-serif;
+}
+
+#profile {
+    border-radius: 50%;
+    -webkit-transition: -webkit-transform 0.2s;
+    transition: -webkit-transform 0.2s;
+    -o-transition: transform 0.2s;
+    transition: transform 0.2s;
+    transition: transform 0.2s, -webkit-transform 0.2s;
+    vertical-align: middle;
+    width: 50px;
+}
+
+#profile:hover {
+    -webkit-transform: scale(200%) rotate(-25deg);
+    -ms-transform: scale(200%) rotate(-25deg);
+    transform: scale(200%) rotate(-25deg);
+}
+
+.alert {
+    background-color: #dcfce7;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    padding: 1rem 2rem;
+}
+
+.card {
+    background-color: white;
+    -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    -webkit-box-flex: 0;
+    -ms-flex: none;
+    flex: none;
+    overflow-y: auto;
+    padding: 4rem;
+    -webkit-transition: -webkit-transform 0.2s;
+    transition: -webkit-transform 0.2s;
+    -o-transition: transform 0.2s;
+    transition: transform 0.2s;
+    transition: transform 0.2s, -webkit-transform 0.2s;
+    width: 50%;
+    height: 95%;
+}
+
+.card:hover {
+    -webkit-transform: none !important;
+    -ms-transform: none !important;
+    transform: none !important;
+}
+
+.post {
+    margin: 2rem 0;
+}
+
+.prose {
+    font-family: "Alegreya", serif;
+    font-size: 1.5rem;
+}
+
+.prose a {
+    color: #0099ff;
+}
+
+.prose blockquote {
+    border-left: 3px solid;
+    padding: 1rem 2rem;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+    font-family: "BL Melody", sans-serif;
+}
+
+@media screen and (min-width: 1200px) {
+    .prose h1,
+    .prose h2,
+    .prose h3,
+    .prose h4,
+    .prose h5,
+    .prose h6 {
+        margin: 0;
+    }
+}
+
+@media screen and (max-width: 1119.98px) {
+    .card {
+        padding: 2rem;
+        width: 100%;
+    }
+
+    .prose blockquote {
+        margin-inline: 0;
+    }
+}
+
+@media screen and (min-width: 767.98px) {
+    #signature {
+        width: 70%;
+    }
+}
