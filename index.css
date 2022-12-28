@@ -14,21 +14,21 @@
 
 * {
     scrollbar-width: auto;
-    scrollbar-color: #c0c1c0 #ffffff;
+    scrollbar-color: #c0c1c0 transparent;
 }
 
 *::-webkit-scrollbar {
-    width: 14px;
+    width: 6px;
 }
 
 *::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: transparent;
 }
 
 *::-webkit-scrollbar-thumb {
     background-color: #c0c1c0;
     border-radius: 15px;
-    border: 3px solid #ffffff;
+    border: 0;
 }
 
 body,
