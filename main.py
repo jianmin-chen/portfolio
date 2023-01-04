@@ -1,7 +1,9 @@
-from os import environ, listdir
+from pprint import pprint
+from http import HTTPStatus
+from os import environ, listdir, path
 from urllib import request, parse
 from urllib.request import Request, urlopen
-import json, socket
+import json, mimetypes, socket
 
 # Load environment variables
 env = {}
@@ -9,10 +11,10 @@ try:
     with open(".env") as file:
         for line in file.readlines():
             key = ""
-            for chr in line:
-                if chr == "=":
+            for char in line:
+                if char == "=":
                     break
-                key += chr
+                key += char
             env[key] = line.lstrip(f"{key}=").strip()
 except:
     # .env doesn't exist, so just read from system environment variables
@@ -35,15 +37,12 @@ if not env.get("SPOTIFY_REFRESH_TOKEN"):
 def listening_to():
     """Get what I'm listening to on Spotify."""
     data = parse.urlencode(
-        {
-            "grant_type": "refresh_token",
-            "refresh_token": env.get("SPOTIFY_REFRESH_TOKEN"),
-        }
+        {"grant_type": "refresh_token", "refresh_token": env["SPOTIFY_REFRESH_TOKEN"]}
     ).encode()
 
     req = Request("https://accounts.spotify.com/api/token", method="POST", data=data)
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
-    req.add_header("Authorization", f"Basic {env.get('SPOTIFY_ENCODED_TOKEN')}")
+    req.add_header("Authorization", f"Basic {env['SPOTIFY_ENCODED_TOKEN']}")
     res = json.loads(request.urlopen(req).read())
 
     # Once we get the Spotify refresh token, use it to get what I'm currently listening to
@@ -71,101 +70,152 @@ def get_posts():
     return json.dumps(posts)
 
 
-# Define socket host and port
-SERVER_HOST = "0.0.0.0"
-SERVER_PORT = int(env.get("PORT"))
-
-# Create socket
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((SERVER_HOST, SERVER_PORT))
-server_socket.listen()
-print(f"Listening on port {SERVER_PORT}")
-
-REQUEST_METHODS = ["GET"]
+blank_line = b"\n\n"  # Blank line
 
 
-def prefix(filename, data={}):
-    """Return file with prefixed headers, with custom templating for HTML files."""
-    try:
-        with open(filename, encoding="utf-8") as file:
-            content = file.read()
-            for key in data.keys():
-                content = content.replace(f"${{{key}}}", data.get(key))
-            return f"""HTTP/1.0 200 OK\n\n{content}"""
-    except FileNotFoundError:
-        return "HTTP/1.0 404 NOT FOUND"
-    except UnicodeDecodeError:
-        with open(filename, "rb") as file:
-            # This works locally, but doesn't work when deployed by Render, Railway, etc?
-            return file.read()
+class TCPServer:
+    host = "0.0.0.0"
+    port = int(env["PORT"])
+    max_connections = 5  # Max connections in queue
+
+    @classmethod
+    def start(cls):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((cls.host, cls.port))
+        s.listen(cls.max_connections)
+
+        print("Listening on port", cls.port)
+
+        while True:
+            # Accept any new connection
+            conn, addr = s.accept()
+            data = conn.recv(1024)
+            response = cls.handle_request(data)
+            conn.sendall(response)
+            conn.close()
+
+    def handle_request(self, data):
+        """Handle incoming data."""
+        pass
 
 
-def parse_headers(headers):
-    res = {"general": [], "pairs": {}}
+class HTTPServer(TCPServer):
+    private_files = ["..", "main.py"]  # Add some sense of security
+    request_methods = ["GET"]
+    status_codes = {}
+    for enum in HTTPStatus:
+        status_codes[enum.value] = str(enum).lstrip("HTTPStatus.")
 
-    for header in headers:
-        if len(header) == 0 or header in ["\r", "\n"]:
-            continue
+    data = {"index.html": {"song": listening_to(), "posts": get_posts()}}
 
-        is_request = False
-        for request_type in REQUEST_METHODS:
-            if header.startswith(request_type):
-                res["pairs"][request_type] = header.lstrip(f"{request_type}").strip()
-                is_request = True
+    @classmethod
+    def handle_request(cls, data):
+        request = HTTPRequest(data, cls.request_methods, cls.private_files)
 
-        if is_request:
-            continue
-
-        key = ""
-        for chr in header:
-            if chr == ":":
-                break
-            key += chr
-
-        if len(key) != len(header):
-            res["pairs"][key] = header.lstrip(f"{key}:").strip()
+        if request.valid:
+            handler = getattr(cls, f"handle_{request.method}")
+            response = handler(request)
+            return response
         else:
-            res["general"].append(key)
+            response_line = cls.response_line(status_code=200)
+            response_headers = cls.response_headers({"Content-Type": "text/html"})
+            response_body = b"Invalid request method"
+            return b"".join(
+                [response_line, response_headers, blank_line, response_body]
+            )
 
-        return res
+    @classmethod
+    def response_line(cls, status_code):
+        reason = cls.status_codes.get(status_code)
+        line = f"HTTP/1.1 {status_code} {reason}{blank_line}"
+        return line.encode()
 
+    @classmethod
+    def response_headers(cls, headers):
+        res = []
+        for header in headers.keys():
+            res.append(f"{header}: {headers[header]}{blank_line}".encode())
+        return b"".join(res)
 
-while True:
-    try:
-        # Wait for client connections
-        client_connection, client_address = server_socket.accept()
-
-        # Get the client request
-        req = client_connection.recv(1024).decode()
-
-        if req:
-            # Send HTTP response
-            headers = parse_headers(req.split("\n"))
-            if headers["pairs"].get("GET"):
-                route = (
-                    headers["pairs"]["GET"]
-                    .replace("HTTP/1.0", "")
-                    .replace("HTTP/1.1", "")
-                    .replace("HTTP/2.0", "")
-                    .strip()
+    @classmethod
+    def render_html(cls, filename):
+        response_line = cls.response_line(status_code=200)
+        response_headers = cls.response_headers({"Content-Type": "type/html"})
+        with open(filename, "rb") as file:
+            response_body = file.read()
+            for key in cls.data.get(filename, {}).keys():
+                # Loop through each key, replacing with appropriate value in file
+                # In a more complex app, this would probably be a function of its own
+                response_body = response_body.replace(
+                    f"${{{key}}}".encode(), cls.data[filename][key].encode()
                 )
+        return b"".join([response_line, response_headers, blank_line, response_body])
 
-                data = {}
-                if route == "/":
-                    # Here's where we add the custom templating data for the / route!
-                    route = "index.html"
-                    data = {"song": listening_to(), "posts": get_posts()}
+    @classmethod
+    def handle_GET(cls, request):
+        filename = request.uri.strip("/")
+        if not len(filename):
+            filename = "index.html"
+        if path.exists(filename):
+            content_type = mimetypes.guess_type(filename)[0] or "text/html"
+            if content_type == "text/html":
+                return cls.render_html(filename)
 
-                response = prefix(route.strip("/"), data)
-                if type(response) == bytes:
-                    client_connection.sendall(response)
-                else:
-                    client_connection.sendall(
-                        response.encode(encoding="ascii", errors="xmlcharrefreplace")
-                    )
-    except Exception as e:
-        print(e)
-    finally:
-        client_connection.close()
+            response_line = cls.response_line(status_code=200)
+            response_headers = cls.response_headers({"Content-Type": content_type})
+            with open(filename, "rb") as file:
+                response_body = file.read()
+        else:
+            response_line = cls.response_line(status_code=404)
+            response_headers = cls.response_headers({"Content-Type": "text/plain"})
+            response_body = b"404 Not Found"
 
-server_socket.close()
+        return b"".join([response_line, response_headers, blank_line, response_body])
+
+
+class HTTPRequest:
+    request_methods = ["GET", "POST", "PUT", "DELETE"]  # By default, CRUD
+
+    def __init__(self, data, request_methods=request_methods, private_files=[]):
+        # The first line of an HTTP request has four parts:
+        # Request method
+        # URI
+        # HTTP version
+        # Line break
+        self.method = None
+        self.uri = None
+        self.http_version = "1.1"
+        self.valid = True  # By default, valid request
+        self.request_methods = request_methods
+        self.private_files = private_files
+
+        self.parse(data)
+
+    def private_route(self):
+        uri = self.uri.strip("/")
+        for private_file in self.private_files:
+            if uri.startswith(private_file):
+                return True
+        return False
+
+    def parse(self, data):
+        lines = data.split(blank_line)
+        request_line = lines[0]
+
+        words = request_line.split(b" ")
+
+        self.method = words[0].decode()
+        if len(words) > 1:
+            self.uri = words[1].decode()
+        if len(words) > 2:
+            self.http_version = words[2]
+
+        if self.method not in self.request_methods or self.private_route():
+            # Not valid request anymore
+            self.valid = False
+
+
+if __name__ == "__main__":
+    server = HTTPServer()
+    server.start()

@@ -1,10 +1,20 @@
-@import url("https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,600;1,400;1,600&display=swap");
+@font-face {
+    font-family: "Alegreya";
+    font-weight: 200 900;
+    src: url("/public/fonts/Alegreya-Variable.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Alegreya";
+    font-style: italic;
+    font-weight: 200 900;
+    src: url("/public/fonts/Alegreya-ItalicVariable.ttf") format("truetype");
+}
 
 @font-face {
     font-family: "BL Melody";
     font-weight: bold;
-    src: url("https://uploads-ssl.webflow.com/609da098c175bfcdca36bb3c/61930aaec81caf08d827a9f5_BLMelodyBETA-Bold.woff2")
-        format("woff2");
+    src: url("/public/fonts/BLMelody-Bold.otf") format("woff2");
 }
 
 * {
