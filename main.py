@@ -1,9 +1,8 @@
-from pprint import pprint
 from http import HTTPStatus
 from os import environ, listdir, path
 from urllib import request, parse
 from urllib.request import Request, urlopen
-import json, mimetypes, socket
+import json, mimetypes, socket, threading
 
 # Load environment variables
 env = {}
@@ -90,10 +89,15 @@ class TCPServer:
         while True:
             # Accept any new connection
             conn, addr = s.accept()
-            data = conn.recv(1024)
-            response = cls.handle_request(data)
-            conn.sendall(response)
-            conn.close()
+            conn.settimeout(60)
+            threading.Thread(target=cls.handle, args=(conn, addr)).start()
+
+    @classmethod
+    def handle(cls, conn, addr):
+        data = conn.recv(1024)
+        response = cls.handle_request(data)
+        conn.sendall(response)
+        conn.close()
 
     def handle_request(self, data):
         """Handle incoming data."""

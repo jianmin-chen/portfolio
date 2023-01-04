@@ -129,6 +129,10 @@ html {
     padding: 1rem 2rem;
 }
 
+.prose code {
+    font-size: 1.25rem;
+}
+
 .prose h1,
 .prose h2,
 .prose h3,
