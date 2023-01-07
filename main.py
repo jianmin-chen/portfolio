@@ -57,7 +57,11 @@ def listening_to():
     if len(res):
         data = json.loads(res)
         song_str = f"{data.get('item').get('name')} by {', '.join([artist.get('name') for artist in data.get('item').get('artists')])}"
-    return song_str
+    return {
+        "status_code": 200,
+        "content_type": "application/json",
+        "body": json.dumps({"value": song_str}),
+    }
 
 
 def get_posts():
@@ -66,10 +70,10 @@ def get_posts():
     for file in listdir("./posts"):
         with open(f"./posts/{file}") as f:
             posts.append({"date": file.strip(".md"), "content": f.read()})
-    return json.dumps(posts)
+    return json.dumps(sorted(posts, key=lambda x: x["date"].split("-")[::-1]))
 
 
-blank_line = b"\n\n"  # Blank line
+data = {"index.html": {"posts": get_posts()}}
 
 
 class TCPServer:
@@ -96,7 +100,7 @@ class TCPServer:
     def handle(cls, conn, addr):
         data = conn.recv(1024)
         response = cls.handle_request(data)
-        conn.sendall(response)
+        conn.sendall(bytes(response))
         conn.close()
 
     def handle_request(self, data):
@@ -107,11 +111,10 @@ class TCPServer:
 class HTTPServer(TCPServer):
     private_files = ["..", "main.py"]  # Add some sense of security
     request_methods = ["GET"]
+    api_routes = {"spotify": listening_to}
     status_codes = {}
     for enum in HTTPStatus:
         status_codes[enum.value] = str(enum).lstrip("HTTPStatus.")
-
-    data = {"index.html": {"song": listening_to(), "posts": get_posts()}}
 
     @classmethod
     def handle_request(cls, data):
@@ -125,36 +128,35 @@ class HTTPServer(TCPServer):
             response_line = cls.response_line(status_code=200)
             response_headers = cls.response_headers({"Content-Type": "text/html"})
             response_body = b"Invalid request method"
-            return b"".join(
-                [response_line, response_headers, blank_line, response_body]
-            )
+            return b"".join([response_line, response_headers, b"\r\n", response_body])
 
     @classmethod
     def response_line(cls, status_code):
         reason = cls.status_codes.get(status_code)
-        line = f"HTTP/1.1 {status_code} {reason}{blank_line}"
+        line = f"HTTP/1.1 {status_code} {reason}\r"
         return line.encode()
 
     @classmethod
     def response_headers(cls, headers):
         res = []
         for header in headers.keys():
-            res.append(f"{header}: {headers[header]}{blank_line}".encode())
+            res.append(f"{header}: {headers[header]}\r\n".encode())
         return b"".join(res)
 
     @classmethod
     def render_html(cls, filename):
         response_line = cls.response_line(status_code=200)
-        response_headers = cls.response_headers({"Content-Type": "type/html"})
+        response_headers = cls.response_headers({"Content-Type": "text/html"})
         with open(filename, "rb") as file:
             response_body = file.read()
-            for key in cls.data.get(filename, {}).keys():
+            for key in data.get(filename, {}).keys():
                 # Loop through each key, replacing with appropriate value in file
                 # In a more complex app, this would probably be a function of its own
                 response_body = response_body.replace(
-                    f"${{{key}}}".encode(), cls.data[filename][key].encode()
+                    f"${{{key}}}".encode(), data[filename][key].encode()
                 )
-        return b"".join([response_line, response_headers, blank_line, response_body])
+        res = b"".join([response_line, response_headers, b"\r\n", response_body])
+        return res
 
     @classmethod
     def handle_GET(cls, request):
@@ -170,12 +172,19 @@ class HTTPServer(TCPServer):
             response_headers = cls.response_headers({"Content-Type": content_type})
             with open(filename, "rb") as file:
                 response_body = file.read()
+        elif filename in list(cls.api_routes.keys()):
+            response = cls.api_routes[filename]()
+            response_line = cls.response_line(status_code=response["status_code"])
+            response_headers = cls.response_headers(
+                {"Content-Type": response["content_type"]}
+            )
+            response_body = response["body"].encode()
         else:
             response_line = cls.response_line(status_code=404)
             response_headers = cls.response_headers({"Content-Type": "text/plain"})
             response_body = b"404 Not Found"
 
-        return b"".join([response_line, response_headers, blank_line, response_body])
+        return b"".join([response_line, response_headers, b"\r\n", response_body])
 
 
 class HTTPRequest:
@@ -204,7 +213,7 @@ class HTTPRequest:
         return False
 
     def parse(self, data):
-        lines = data.split(blank_line)
+        lines = data.split(b"\r\n")
         request_line = lines[0]
 
         words = request_line.split(b" ")

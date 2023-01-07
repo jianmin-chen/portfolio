@@ -40,6 +40,7 @@
         <link href="/index.css" rel="stylesheet" />
         <script src="https://jianmin-chen.github.io/markdown-parser/parser.js"></script>
         <script src="https://jianmin-chen.github.io/markdown-parser/utils.js"></script>
+        <script src="https://summer.hackclub.com/scrapbookwidget.js"></script>
     </head>
     <body>
         <script>
@@ -63,6 +64,8 @@
                     }${randomNum(1, 2)}deg)`;
                 });
 
+                displayScrapbookUsername("jc");
+
                 document.getElementById("date").innerText =
                     (new Date() - new Date(2006, 11, 08)) /
                     1000 /
@@ -71,7 +74,17 @@
                     24 /
                     365;
 
-                for (let post of posts.sort((a, b) => new Date(a.date) < new Date(b.date))) {
+                fetch("/spotify")
+                    .then(res => res.json())
+                    .then(
+                        json =>
+                            (document.getElementById("music").innerText =
+                                json.value)
+                    );
+
+                for (let post of posts.sort(
+                    (a, b) => new Date(a.date) < new Date(b.date)
+                )) {
                     let postContainer = document.createElement("div");
                     postContainer.classList.add("post");
                     let heading = document.createElement("h2");
@@ -91,7 +104,7 @@
         <div class="card">
             <div class="prose">
                 <div class="alert">
-                    Currently listening to <span id="music">${song}</span>.
+                    Currently listening to <span id="music">nothing</span>.
                 </div>
                 <h1>
                     <img
@@ -278,7 +291,7 @@
                     After I saw
                     <a href="https://youtu.be/cEH_ipqHbUw">this video</a> on
                     creating a server from scratch in C, I decided to try it out
-                    for myself, but in Python. I ended up writing around 170
+                    for myself, but in Python. I ended up writing around 230
                     lines of (pretty bad) code, and I added a couple extra
                     features:
                 </p>
@@ -297,7 +310,10 @@
                 <p>
                     So unecessary, but so fun. Everything was written from
                     scratch; only default libraries in Python
-                    (<code>json</code>, <code>http</code>, <code>mimetypes</code>, <code>os</code>, <code>socket</code>, <code>threading</code> and <code>urllib</code>), were used.
+                    (<code>json</code>, <code>http</code>,
+                    <code>mimetypes</code>, <code>os</code>,
+                    <code>socket</code>, <code>threading</code> and
+                    <code>urllib</code>), were used.
                 </p>
                 <p>
                     The design is inspired by
