@@ -115,7 +115,7 @@ class HTTPServer(TCPServer):
     api_routes = {"spotify": listening_to}
     status_codes = {}
     for enum in HTTPStatus:
-        status_codes[enum.value] = str(enum).lstrip("HTTPStatus.")
+        status_codes[enum.value] = str(enum).lstrip("HTTPStatus.").replace("_", " ")
 
     @classmethod
     def handle_request(cls, data):
