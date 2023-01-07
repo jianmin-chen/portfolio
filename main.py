@@ -70,7 +70,9 @@ def get_posts():
     for file in listdir("./posts"):
         with open(f"./posts/{file}") as f:
             posts.append({"date": file.strip(".md"), "content": f.read()})
-    return json.dumps(sorted(posts, key=lambda x: x["date"].split("-")[::-1]))
+    return json.dumps(
+        sorted(posts, key=lambda x: x["date"].split("-")[::-1], reverse=True)
+    )
 
 
 data = {"index.html": {"posts": get_posts()}}
@@ -100,7 +102,6 @@ class TCPServer:
     def handle(cls, conn, addr):
         data = conn.recv(1024)
         response = cls.handle_request(data)
-        print(response)
         conn.sendall(response)
         conn.close()
 
