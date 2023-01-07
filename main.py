@@ -100,7 +100,8 @@ class TCPServer:
     def handle(cls, conn, addr):
         data = conn.recv(1024)
         response = cls.handle_request(data)
-        conn.sendall(bytes(response))
+        print(response)
+        conn.sendall(response)
         conn.close()
 
     def handle_request(self, data):
