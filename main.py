@@ -134,7 +134,7 @@ class HTTPServer(TCPServer):
     @classmethod
     def response_line(cls, status_code):
         reason = cls.status_codes.get(status_code)
-        line = f"HTTP/1.1 {status_code} {reason}\r"
+        line = f"HTTP/1.1 {status_code} {reason}\r\n"
         return line.encode()
 
     @classmethod
